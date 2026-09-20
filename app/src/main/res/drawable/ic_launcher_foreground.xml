@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pictogramme train, dessiné main (identité EnTrain, pas un logo SNCF) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- caisse -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M36,26 L72,26 A6,6 0 0 1 78,32 L78,68 A6,6 0 0 1 72,74 L36,74 A6,6 0 0 1 30,68 L30,32 A6,6 0 0 1 36,26 Z" />
+    <!-- bandeau fenêtre -->
+    <path
+        android:fillColor="#6B2D8F"
+        android:pathData="M35,34 L73,34 A2,2 0 0 1 75,36 L75,48 A2,2 0 0 1 73,50 L35,50 A2,2 0 0 1 33,48 L33,36 A2,2 0 0 1 35,34 Z" />
+    <!-- fenêtres latérales basses -->
+    <path
+        android:fillColor="#6B2D8F"
+        android:pathData="M35,54 L49,54 A2,2 0 0 1 51,56 L51,63 A2,2 0 0 1 49,65 L35,65 A2,2 0 0 1 33,63 L33,56 A2,2 0 0 1 35,54 Z" />
+    <path
+        android:fillColor="#6B2D8F"
+        android:pathData="M59,54 L73,54 A2,2 0 0 1 75,56 L75,63 A2,2 0 0 1 73,65 L59,65 A2,2 0 0 1 57,63 L57,56 A2,2 0 0 1 59,54 Z" />
+    <!-- phares -->
+    <path
+        android:fillColor="#F5B335"
+        android:pathData="M34,68 m-3,0 a3,3 0 1 1 6,0 a3,3 0 1 1 -6,0" />
+    <path
+        android:fillColor="#F5B335"
+        android:pathData="M74,68 m-3,0 a3,3 0 1 1 6,0 a3,3 0 1 1 -6,0" />
+    <!-- rails -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M38,80 L34,90" />
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M70,80 L74,90" />
+</vector>

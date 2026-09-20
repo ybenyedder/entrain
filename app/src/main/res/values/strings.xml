@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">EnTrain</string>
+    <string name="tab_home">Accueil</string>
+    <string name="tab_stations">Gares</string>
+    <string name="tab_traffic">Trafic</string>
+    <string name="tab_settings">Réglages</string>
+</resources>
