@@ -14,15 +14,24 @@ des trains SNCF — **sans aucun traceur**.
   correspondances, jusqu'à 4 étapes, sur 6 mois d'horaires, en mode « partir à » ou « arriver à ». Tri par
   départ / arrivée / durée.
 - **Temps réel national** : retards, horaires estimés, trains supprimés —
-  rafraîchi automatiquement chaque minute + tirez-pour-rafraîchir.
+  rafraîchi automatiquement chaque minute, à chaque retour sur l'app et au
+  tirez-pour-rafraîchir.
+- **Horaires auto-actualisés (v0.4)** : la base de circulation se met à jour
+  toute seule en arrière-plan quand la SNCF publie une nouvelle version
+  (contrôle quotidien, téléchargement si la base a plus de 4 jours).
 - **Temps réel Transilien/RER (v0.2)** : passages en gare d'Île-de-France via la
   plateforme open data PRIM d'IDFM. Optionnel : il faut y coller votre clé API
   gratuite personnelle dans Réglages (rien d'autre n'en dépend).
 - **Recherche « arriver à » (v0.3)** : mode Arriver à — les trajets aboutissant
   avant l'heure cible, du dernier départ possible au plus tôt.
 - **Voyage en cours (v0.3)** : suivez votre train (bouton « Suivre » sur un
-  trajet ou un départ) — prochain arrêt, arrivée estimée à votre gare, retard
-  en direct, timeline du parcours ; persiste entre les lancements.
+  trajet ou un départ) — prochain arrêt, barre de progression entre gares,
+  arrivée estimée à votre gare, retard en direct, timeline du parcours ;
+  persiste entre les lancements.
+- **Perturbations liées au train (v0.4)** : les alertes touchant votre trajet
+  s'affichent sur le détail et sur le voyage en cours.
+- **Quai/voie (v0.4)** : affiché pour les trains Île-de-France quand IDFM le
+  fournit (les flux nationaux SNCF ne le publient pas).
 - **Accessibilité (v0.3)** : descriptions complètes pour TalkBack sur les
   cartes de trajet, tableaux de départs et étapes du voyage en cours.
 - **Perturbations** (travaux, grèves, infos trafic) triées par importance.

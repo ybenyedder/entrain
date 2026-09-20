@@ -44,7 +44,18 @@ class HomeViewModel(private val container: AppContainer) : ViewModel() {
             container.ensureIndex()
         }
         viewModelScope.launch {
+            // horaires : contrôle quotidien, téléchargement hebdo si périmés
+            container.maybeAutoUpdateTimetable()
+        }
+        viewModelScope.launch {
             container.rtRepo.refresh()
+            refreshAlerts()
+        }
+    }
+
+    /** Recompte les perturbations actives depuis le dernier flux. */
+    fun refreshAlerts() {
+        viewModelScope.launch {
             val active = container.rtRepo.alerts.filter { container.rtRepo.isActiveNow(it) }
             val disruptions = active.count { a ->
                 DISRUPTION_WORDS.any { a.header.contains(it, ignoreCase = true) }

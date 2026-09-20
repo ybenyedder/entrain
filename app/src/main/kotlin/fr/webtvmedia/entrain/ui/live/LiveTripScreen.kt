@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -38,6 +39,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
@@ -151,6 +153,23 @@ fun LiveTripScreen(navController: NavController) {
                                 state.nextStopName?.let { "Prochain arrêt : $it" } ?: "En route…",
                                 style = MaterialTheme.typography.headlineSmall,
                             )
+                            state.progress?.let { p ->
+                                Spacer(Modifier.height(8.dp))
+                                val anim by androidx.compose.animation.core.animateFloatAsState(
+                                    p,
+                                    androidx.compose.animation.core.tween(900),
+                                    label = "progress",
+                                )
+                                androidx.compose.material3.LinearProgressIndicator(
+                                    progress = { anim },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(6.dp)
+                                        .clip(RoundedCornerShape(3.dp)),
+                                    color = state.category.color,
+                                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                                )
+                            }
                             if (state.arrivalEtaSec != null) {
                                 Spacer(Modifier.height(4.dp))
                                 val mineLabel = buildString {
@@ -168,6 +187,41 @@ fun LiveTripScreen(navController: NavController) {
                 }
 
                 Spacer(Modifier.height(20.dp))
+
+                // perturbations touchant ce train
+                if (state.alerts.isNotEmpty()) {
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = MaterialTheme.colorScheme.errorContainer,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Column(Modifier.padding(14.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    androidx.compose.material.icons.Icons.Filled.Warning,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                                    modifier = Modifier.size(16.dp),
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    "Perturbation sur ce train",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                )
+                            }
+                            for (a in state.alerts.take(2)) {
+                                Spacer(Modifier.height(6.dp))
+                                Text(
+                                    a.header,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                )
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(16.dp))
+                }
 
                 // ---- timeline des arrêts ----
                 state.stops.forEachIndexed { i, s ->

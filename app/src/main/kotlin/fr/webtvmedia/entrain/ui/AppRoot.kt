@@ -39,6 +39,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.launch
 import fr.webtvmedia.entrain.EnTrainApp
 import fr.webtvmedia.entrain.ui.alerts.TrafficScreen
 import fr.webtvmedia.entrain.ui.departures.DeparturesScreen
@@ -102,6 +103,17 @@ fun AppRoot() {
         navController.navigate(if (ready) Routes.HOME else Routes.ONBOARDING) {
             popUpTo(Routes.SPLASH) { inclusive = true }
         }
+    }
+
+    // temps réel repris dès le retour sur l'app (throttle interne 30 s)
+    val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                kotlinx.coroutines.MainScope().launch { app.container.rtRepo.refresh() }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
     }
 
     Scaffold(

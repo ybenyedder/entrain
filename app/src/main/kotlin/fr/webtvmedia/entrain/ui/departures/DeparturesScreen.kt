@@ -245,9 +245,12 @@ private fun DepartureRow(d: Departure, onFollow: (() -> Unit)? = null) {
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            if (d.trainNumber.isNotBlank()) {
+            if (d.trainNumber.isNotBlank() || d.platform != null) {
                 Text(
-                    "n° ${d.trainNumber}",
+                    buildString {
+                        if (d.trainNumber.isNotBlank()) append("n° ${d.trainNumber}")
+                        d.platform?.let { append(if (isEmpty()) "Voie $it" else " · Voie $it") }
+                    },
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

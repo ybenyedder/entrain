@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,6 +40,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,8 +67,29 @@ fun JourneyDetailScreen(navController: NavController, index: Int) {
     val context = LocalContext.current
     // les trajets sont conservés par le conteneur applicatif
     val app = context.applicationContext as fr.webtvmedia.entrain.EnTrainApp
-    val journeys = app.container.lastJourneys
-    val journey = journeys.getOrNull(index)
+
+    var journey by androidx.compose.runtime.remember {
+        androidx.compose.runtime.mutableStateOf(app.container.lastJourneys.getOrNull(index))
+    }
+    var tripAlerts by androidx.compose.runtime.remember {
+        androidx.compose.runtime.mutableStateOf(emptyList<fr.webtvmedia.entrain.domain.model.AlertInfo>())
+    }
+
+    // temps réel vivant : re-enrichissement + alertes du train chaque minute
+    LaunchedEffect(Unit) {
+        while (true) {
+            kotlinx.coroutines.delay(60_000)
+            app.container.rtRepo.refresh(force = true)
+            journey = app.container.reenrichJourney(index)
+            tripAlerts = journey?.legs?.flatMap { app.container.rtRepo.alertsForTrip(it.tripId) }
+                .orEmpty().distinctBy { it.id }
+        }
+    }
+    // première passe d'alertes sans attendre la minute
+    LaunchedEffect(journey) {
+        tripAlerts = journey?.legs?.flatMap { app.container.rtRepo.alertsForTrip(it.tripId) }
+            .orEmpty().distinctBy { it.id }
+    }
 
     Scaffold(
         topBar = {
@@ -91,6 +114,7 @@ fun JourneyDetailScreen(navController: NavController, index: Int) {
             }
             return@Scaffold
         }
+        val j = journey!!
         Column(
             Modifier
                 .fillMaxSize()
@@ -109,21 +133,21 @@ fun JourneyDetailScreen(navController: NavController, index: Int) {
                         Column(Modifier.weight(1f)) {
                             Text("Départ", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
                             Text(
-                                TimeUtils.hhmm(journey.departureSec) + if (journey.departureDayOffset > 0) " J+1" else "",
+                                TimeUtils.hhmm(j.departureSec) + if (j.departureDayOffset > 0) " J+1" else "",
                                 style = MaterialTheme.typography.headlineMedium,
                             )
                         }
                         Column(Modifier.weight(1f)) {
                             Text("Arrivée", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
                             Text(
-                                TimeUtils.hhmm(journey.arrivalSec) + if (journey.arrivalDayOffset > 0) " J+1" else "",
+                                TimeUtils.hhmm(j.arrivalSec) + if (j.arrivalDayOffset > 0) " J+1" else "",
                                 style = MaterialTheme.typography.headlineMedium,
                             )
                         }
                         Column(Modifier.weight(1f)) {
                             Text("Durée", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
                             Text(
-                                TimeUtils.duration(journey.durationSec),
+                                TimeUtils.duration(j.durationSec),
                                 style = MaterialTheme.typography.headlineMedium,
                             )
                         }
@@ -133,7 +157,43 @@ fun JourneyDetailScreen(navController: NavController, index: Int) {
 
             Spacer(Modifier.height(20.dp))
 
-            journey.legs.forEachIndexed { legIdx, leg ->
+            // perturbations touchant ce trajet
+            if (tripAlerts.isNotEmpty()) {
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Column(Modifier.padding(14.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                androidx.compose.material.icons.Icons.Filled.Warning,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.size(16.dp),
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                if (tripAlerts.size == 1) "Perturbation sur ce trajet"
+                                else "${tripAlerts.size} perturbations sur ce trajet",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                            )
+                        }
+                        for (a in tripAlerts.take(3)) {
+                            Spacer(Modifier.height(6.dp))
+                            Text(
+                                a.header,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                            )
+                        }
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+            }
+
+            j.legs.forEachIndexed { legIdx, leg ->
                 LegPane(leg) {
                     kotlinx.coroutines.MainScope().launch {
                         app.container.startLiveTrip(
@@ -144,9 +204,9 @@ fun JourneyDetailScreen(navController: NavController, index: Int) {
                         navController.navigate(fr.webtvmedia.entrain.ui.Routes.LIVE)
                     }
                 }
-                if (legIdx < journey.legs.lastIndex) {
+                if (legIdx < j.legs.lastIndex) {
                     // étape de correspondance
-                    val wait = journey.legs[legIdx + 1].let { next ->
+                    val wait = j.legs[legIdx + 1].let { next ->
                         val nextDep = next.departureSec + next.departureDayOffset * 86400
                         val prevArr = leg.arrivalSec + leg.arrivalDayOffset * 86400
                         nextDep - prevArr
@@ -175,8 +235,8 @@ fun JourneyDetailScreen(navController: NavController, index: Int) {
 
             OutlinedButton(
                 onClick = {
-                    val from = journey.legs.first().boardStation
-                    val to = journey.legs.last().alightStation
+                    val from = j.legs.first().boardStation
+                    val to = j.legs.last().alightStation
                     val date = java.time.LocalDate.now(TimeUtils.PARIS).toString()
                     val url = "https://www.sncf-connect.com/billet-train/recherche?from=${
                         Uri.encode(from)

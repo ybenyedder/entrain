@@ -69,6 +69,7 @@ import fr.webtvmedia.entrain.ui.Routes
 import fr.webtvmedia.entrain.ui.components.SectionTitle
 import fr.webtvmedia.entrain.ui.vm.VmFactory
 import fr.webtvmedia.entrain.util.TimeUtils
+import kotlinx.coroutines.delay
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
@@ -99,7 +100,13 @@ fun HomeScreen(navController: NavController) {
             }
         }
     }
-    // rafraîchit le formulaire quand on revient sur l'écran
+    // rafraîchissement périodique du compteur de trafic + rafraîchit le formulaire au retour
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(60_000)
+            vm.refreshAlerts()
+        }
+    }
     LaunchedEffect(Unit) { vm.refreshForm() }
 
     val today = vm.defaultYmd()

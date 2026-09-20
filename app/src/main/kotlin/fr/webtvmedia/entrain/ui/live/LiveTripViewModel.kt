@@ -34,6 +34,10 @@ data class LiveTripUiState(
     val arrivalEtaSec: Int? = null,
     val arrivalDelaySec: Int? = null,
     val finished: Boolean = false,
+    /** avancement du train entre le dernier arrêt desservi et le prochain (0..1) */
+    val progress: Float? = null,
+    /** perturbations touchant ce train */
+    val alerts: List<fr.webtvmedia.entrain.domain.model.AlertInfo> = emptyList(),
 )
 
 class LiveTripViewModel(private val container: AppContainer) : ViewModel() {
@@ -95,6 +99,21 @@ class LiveTripViewModel(private val container: AppContainer) : ViewModel() {
             val delaySec = boardRt?.departureEpoch?.let { (it - boardSched).toInt() }
                 ?: boardRt?.arrivalEpoch?.let { (it - boardSched).toInt() }
 
+            // avancement entre le dernier arrêt desservi et le prochain
+            var progress: Float? = null
+            if (nextIdx in 1 until stops.size) {
+                fun epochOf(i: Int, sec: Int): Long =
+                    stops[i].estimatedEpoch ?: TimeUtils.naiveToEpoch(serviceDate, sec)
+                val prevEpoch = epochOf(nextIdx - 1, rows[nextIdx - 1].departureSec)
+                val nextEpoch = epochOf(nextIdx, rows[nextIdx].arrivalSec)
+                if (nextEpoch > prevEpoch) {
+                    progress = ((now - prevEpoch).toDouble() / (nextEpoch - prevEpoch))
+                        .coerceIn(0.0, 1.0).toFloat()
+                }
+            } else if (nextIdx == 0) {
+                progress = 0f
+            }
+
             val mineIdx = stops.indexOfFirst { it.isMine }
             val mine = if (mineIdx >= 0) stops[mineIdx] else null
             val alightRt = rt?.stopUpdates?.get(trip.alightStopPointId)
@@ -118,6 +137,9 @@ class LiveTripViewModel(private val container: AppContainer) : ViewModel() {
                     ?: mine?.scheduledSec,
                 arrivalDelaySec = arrDelay,
                 finished = nextIdx == -1,
+                progress = progress,
+                alerts = container.rtRepo.alerts
+                    .filter { it.informedTripIds.contains(trip.tripId) && container.rtRepo.isActiveNow(it) },
             )
         }
     }

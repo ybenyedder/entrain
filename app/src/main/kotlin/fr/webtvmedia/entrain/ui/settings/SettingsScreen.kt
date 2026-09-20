@@ -74,6 +74,7 @@ fun SettingsScreen() {
                 Column(Modifier.padding(16.dp)) {
                     SettingLine("Version des horaires", state.gtfsVersion ?: "—")
                     SettingLine("Mise à jour", state.importDate ?: "—")
+                    SettingLine("Actualisation", "Auto (hebdo) + temps réel en continu")
                     if (state.updateStatus != null) {
                         Spacer(Modifier.height(8.dp))
                         Text(

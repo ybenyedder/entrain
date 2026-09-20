@@ -89,6 +89,8 @@ data class Departure(
     val stopPointId: String,
     /** libellé de ligne (ex. « RER A », « J ») pour les passages PRIM */
     val lineLabel: String? = null,
+    /** quai/voie quand la source le fournit (PRIM) */
+    val platform: String? = null,
 )
 
 data class AlertInfo(

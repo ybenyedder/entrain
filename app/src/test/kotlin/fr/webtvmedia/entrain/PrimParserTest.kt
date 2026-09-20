@@ -26,7 +26,8 @@ class PrimParserTest {
                       "TrainNumber": "ZB123",
                       "MonitoredCall": {
                         "AimedDepartureTime": "2026-09-20T15:12:00+02:00",
-                        "ExpectedDepartureTime": "2026-09-20T15:17:00+02:00"
+                        "ExpectedDepartureTime": "2026-09-20T15:17:00+02:00",
+                        "DeparturePlatformName": {"value": "12"}
                       }
                     }
                   },
@@ -59,6 +60,7 @@ class PrimParserTest {
         assertEquals("RER A", first.lineLabel)
         assertEquals("Marne-la-Vallée Chessy", first.destination)
         assertEquals("ZB123", first.trainNumber)
+        assertEquals("12", first.platform)
         // 2026-09-20T00:00Z = 1789862400 ; 15:12+02:00 = 13:12Z = +47520 s
         assertEquals(1789909920L, first.aimedEpoch)
         assertEquals(1789910220L, first.expectedEpoch)
